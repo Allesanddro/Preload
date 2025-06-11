@@ -78,7 +78,7 @@ namespace Preload
                         var result = MessageBox.Show(
                             $"A new version ({latestTag}) is available!\n\nYou are currently using version {currentVersion}.\n\nWould you like to go to the download page now?",
                             "Update Available",
-                            MessageBoxButtons.YesNoCancel,
+                            MessageBoxButtons.YesNo,
                             MessageBoxIcon.Information);
 
                         if (result == DialogResult.Yes)
