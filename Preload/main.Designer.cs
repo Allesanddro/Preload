@@ -72,9 +72,10 @@
             // lblStatus
             // 
             this.lblStatus.AutoSize = true;
+            this.lblStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
             this.lblStatus.Location = new System.Drawing.Point(364, 153);
             this.lblStatus.Name = "lblStatus";
-            this.lblStatus.Size = new System.Drawing.Size(60, 13);
+            this.lblStatus.Size = new System.Drawing.Size(90, 20);
             this.lblStatus.TabIndex = 3;
             this.lblStatus.Text = "Status: Idle";
             // 
@@ -88,36 +89,40 @@
             // lblSize
             // 
             this.lblSize.AutoSize = true;
-            this.lblSize.Location = new System.Drawing.Point(182, 91);
+            this.lblSize.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
+            this.lblSize.Location = new System.Drawing.Point(103, 86);
             this.lblSize.Name = "lblSize";
-            this.lblSize.Size = new System.Drawing.Size(27, 13);
+            this.lblSize.Size = new System.Drawing.Size(40, 20);
             this.lblSize.TabIndex = 5;
             this.lblSize.Text = "Size";
             // 
             // lblProgress
             // 
             this.lblProgress.AutoSize = true;
-            this.lblProgress.Location = new System.Drawing.Point(182, 120);
+            this.lblProgress.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
+            this.lblProgress.Location = new System.Drawing.Point(103, 115);
             this.lblProgress.Name = "lblProgress";
-            this.lblProgress.Size = new System.Drawing.Size(48, 13);
+            this.lblProgress.Size = new System.Drawing.Size(72, 20);
             this.lblProgress.TabIndex = 6;
             this.lblProgress.Text = "Progress";
             // 
             // lblSpeed
             // 
             this.lblSpeed.AutoSize = true;
-            this.lblSpeed.Location = new System.Drawing.Point(182, 153);
+            this.lblSpeed.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
+            this.lblSpeed.Location = new System.Drawing.Point(103, 148);
             this.lblSpeed.Name = "lblSpeed";
-            this.lblSpeed.Size = new System.Drawing.Size(38, 13);
+            this.lblSpeed.Size = new System.Drawing.Size(56, 20);
             this.lblSpeed.TabIndex = 7;
             this.lblSpeed.Text = "Speed";
             // 
             // lblETA
             // 
             this.lblETA.AutoSize = true;
-            this.lblETA.Location = new System.Drawing.Point(182, 191);
+            this.lblETA.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
+            this.lblETA.Location = new System.Drawing.Point(103, 186);
             this.lblETA.Name = "lblETA";
-            this.lblETA.Size = new System.Drawing.Size(28, 13);
+            this.lblETA.Size = new System.Drawing.Size(40, 20);
             this.lblETA.TabIndex = 8;
             this.lblETA.Text = "ETA";
             // 
@@ -161,7 +166,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.HotTrack;
-            this.ClientSize = new System.Drawing.Size(800, 557);
+            this.ClientSize = new System.Drawing.Size(880, 619);
             this.Controls.Add(this.btnUpdateCheck);
             this.Controls.Add(this.txtLog);
             this.Controls.Add(this.btnCancel);
@@ -175,7 +180,8 @@
             this.Controls.Add(this.btnBrowse);
             this.Controls.Add(this.txtFolderPath);
             this.Name = "main";
-            this.Text = "Form1";
+            this.RightToLeftLayout = true;
+            this.Text = "PrimoCache Preloader";
             this.ResumeLayout(false);
             this.PerformLayout();
 
