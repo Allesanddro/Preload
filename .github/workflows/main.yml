@@ -1,0 +1,42 @@
+name: Create New Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+
+    env:
+      Solution_Name: Preload.sln
+      Project_Path: Preload\Preload.csproj
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Setup NuGet
+        uses: nuget/setup-nuget@v2
+
+      - name: Restore NuGet packages
+        run: nuget restore $env:Solution_Name
+
+      - name: Build the application
+        run: msbuild $env:Solution_Name /p:Configuration=Release
+
+      - name: Create release zip with version
+        run: Compress-Archive -Path "Preload\bin\Release" -DestinationPath "Preloader-${{ github.ref_name }}.zip"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          body: "Automated release of the PrimoCache Preloader application."
+          files: "Preloader-${{ github.ref_name }}.zip"
