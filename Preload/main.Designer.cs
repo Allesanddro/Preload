@@ -39,6 +39,7 @@
             this.lblETA = new System.Windows.Forms.Label();
             this.btnCancel = new System.Windows.Forms.Button();
             this.txtLog = new System.Windows.Forms.TextBox();
+            this.btnUpdateCheck = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // txtFolderPath
@@ -143,6 +144,17 @@
             this.txtLog.TabIndex = 10;
             this.txtLog.WordWrap = false;
             // 
+            // btnUpdateCheck
+            // 
+            this.btnUpdateCheck.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
+            this.btnUpdateCheck.Location = new System.Drawing.Point(47, 517);
+            this.btnUpdateCheck.Name = "btnUpdateCheck";
+            this.btnUpdateCheck.Size = new System.Drawing.Size(104, 28);
+            this.btnUpdateCheck.TabIndex = 11;
+            this.btnUpdateCheck.Text = "Check for Updates";
+            this.btnUpdateCheck.UseVisualStyleBackColor = true;
+            this.btnUpdateCheck.Click += new System.EventHandler(this.btnUpdateCheck_Click);
+            // 
             // main
             // 
             this.AllowDrop = true;
@@ -150,6 +162,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.HotTrack;
             this.ClientSize = new System.Drawing.Size(800, 557);
+            this.Controls.Add(this.btnUpdateCheck);
             this.Controls.Add(this.txtLog);
             this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.lblETA);
@@ -181,6 +194,7 @@
         private System.Windows.Forms.Label lblETA;
         private System.Windows.Forms.Button btnCancel;
         private System.Windows.Forms.TextBox txtLog;
+        private System.Windows.Forms.Button btnUpdateCheck;
     }
 }
 

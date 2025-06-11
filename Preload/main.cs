@@ -2,37 +2,39 @@
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-
 namespace Preload
 {
-    
     public partial class main : Form
     {
+        private const string _githubRepo = "Allesanddro/Preload";
+        private readonly Version _currentVersion;
+
         private CancellationTokenSource _preloadCts;
         private CancellationTokenSource _calculationCts;
-
         private string[] _fileList;
         private long _totalFolderSize;
         private bool _isCalculating;
 
-        
         public main()
         {
             InitializeComponent();
 
-            
-            this.Text = "PrimoCache Preloader v1.0";
-            this.AllowDrop = true;
+            _currentVersion = Assembly.GetExecutingAssembly().GetName().Version;
+            this.Text = $"PrimoCache Preloader v{_currentVersion.Major}.{_currentVersion.Minor}.{_currentVersion.Build}";
+
+            // Set up form events. The button click events are now handled by the designer.
             this.Load += main_Load;
-            this.DragEnter += main_DragEnter; 
-            this.DragDrop += main_DragDrop; 
+            this.AllowDrop = true;
+            this.DragEnter += main_DragEnter;
+            this.DragDrop += main_DragDrop;
         }
 
-       
         private void main_Load(object sender, EventArgs e)
         {
             Log("Application started.");
@@ -43,6 +45,62 @@ namespace Preload
                 txtFolderPath.Text = lastPath;
                 Log($"Loaded last used folder: {lastPath}");
                 CalculateFolderSizeAsync(lastPath);
+            }
+        }
+
+        private async void btnUpdateCheck_Click(object sender, EventArgs e)
+        {
+            Log("Checking for updates...");
+            btnUpdateCheck.Enabled = false;
+            btnUpdateCheck.Text = "Checking...";
+
+            string url = $"https://api.github.com/repos/{_githubRepo}/releases/latest";
+
+            try
+            {
+                using (var client = new HttpClient())
+                {
+                    client.DefaultRequestHeaders.Add("User-Agent", "PrimoCache-Preloader-Update-Check");
+                    string json = await client.GetStringAsync(url);
+
+                    string tagNameMarker = "\"tag_name\":\"";
+                    int startIndex = json.IndexOf(tagNameMarker) + tagNameMarker.Length;
+                    int endIndex = json.IndexOf("\"", startIndex);
+                    string latestTag = json.Substring(startIndex, endIndex - startIndex);
+
+                    Version latestVersion = new Version(latestTag.TrimStart('v'));
+
+                    Log($"Current version: {_currentVersion}. Latest version on GitHub: {latestVersion}");
+
+                    if (latestVersion > _currentVersion)
+                    {
+                        var result = MessageBox.Show(
+                            $"A new version ({latestTag}) is available!\n\nYou are currently using version {_currentVersion}.\n\nWould you like to go to the download page now?",
+                            "Update Available",
+                            MessageBoxButtons.YesNo,
+                            MessageBoxIcon.Information);
+
+                        if (result == DialogResult.Yes)
+                        {
+                            Log("User clicked Yes to download update.");
+                            Process.Start($"https://github.com/{_githubRepo}/releases/latest");
+                        }
+                    }
+                    else
+                    {
+                        MessageBox.Show("You are running the latest version.", "Up to Date", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log($"ERROR: Could not check for updates. {ex.Message}");
+                MessageBox.Show($"Could not check for updates.\nPlease check your internet connection or visit the GitHub page manually.\n\nError: {ex.Message}", "Update Check Failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                btnUpdateCheck.Enabled = true;
+                btnUpdateCheck.Text = "Check for Updates...";
             }
         }
 
@@ -58,6 +116,7 @@ namespace Preload
             txtLog.ScrollToCaret();
         }
 
+        #region Existing Code
         private async void CalculateFolderSizeAsync(string folderPath)
         {
             _calculationCts?.Cancel();
@@ -310,10 +369,10 @@ namespace Preload
             return $"{dblSByte:0.0} {suffix[i]}";
         }
 
-
         private void main_DragEnter(object sender, DragEventArgs e)
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop)) { e.Effect = DragDropEffects.Copy; }
         }
+        #endregion
     }
 }
