@@ -14,7 +14,7 @@ namespace Preload
         private const string _githubRepo = "Allesanddro/Preload";
 
 
-        private const string _currentVersionString = "1.0.3";
+        private const string _currentVersionString = "1.0.4";
 
         private CancellationTokenSource _preloadCts;
         private CancellationTokenSource _calculationCts;
@@ -78,7 +78,7 @@ namespace Preload
                         var result = MessageBox.Show(
                             $"A new version ({latestTag}) is available!\n\nYou are currently using version {currentVersion}.\n\nWould you like to go to the download page now?",
                             "Update Available",
-                            MessageBoxButtons.YesNo,
+                            MessageBoxButtons.YesNoCancel,
                             MessageBoxIcon.Information);
 
                         if (result == DialogResult.Yes)
