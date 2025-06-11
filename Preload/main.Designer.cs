@@ -154,7 +154,7 @@
             this.btnUpdateCheck.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
             this.btnUpdateCheck.Location = new System.Drawing.Point(47, 517);
             this.btnUpdateCheck.Name = "btnUpdateCheck";
-            this.btnUpdateCheck.Size = new System.Drawing.Size(104, 28);
+            this.btnUpdateCheck.Size = new System.Drawing.Size(128, 34);
             this.btnUpdateCheck.TabIndex = 11;
             this.btnUpdateCheck.Text = "Check for Updates";
             this.btnUpdateCheck.UseVisualStyleBackColor = true;

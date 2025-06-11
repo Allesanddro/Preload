@@ -85,6 +85,7 @@ namespace Preload
                         {
                             Log("User clicked Yes to download update.");
                             Process.Start($"https://github.com/{_githubRepo}/releases/latest");
+                        
                         }
                     }
                     else
