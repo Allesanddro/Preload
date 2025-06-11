@@ -14,7 +14,7 @@ namespace Preload
         private const string _githubRepo = "Allesanddro/Preload";
 
 
-        private const string _currentVersionString = "1.0.2";
+        private const string _currentVersionString = "1.0.3";
 
         private CancellationTokenSource _preloadCts;
         private CancellationTokenSource _calculationCts;
