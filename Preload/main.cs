@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Reflection; // This can be removed if not used elsewhere, but it's safe to keep.
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -14,9 +13,8 @@ namespace Preload
     {
         private const string _githubRepo = "Allesanddro/Preload";
 
-        // --- [CHANGE] --- Using a hardcoded string for the version number.
-        // Manually update this string when you create a new release.
-        private const string _currentVersionString = "1.0.1";
+
+        private const string _currentVersionString = "1.0.2";
 
         private CancellationTokenSource _preloadCts;
         private CancellationTokenSource _calculationCts;
@@ -28,7 +26,6 @@ namespace Preload
         {
             InitializeComponent();
 
-            // --- [CHANGE] --- Removed assembly reading, now uses the hardcoded string.
             this.Text = $"PrimoCache Preloader v{_currentVersionString}";
 
             this.Load += main_Load;
@@ -72,7 +69,6 @@ namespace Preload
 
                     Version latestVersion = new Version(latestTag.TrimStart('v'));
 
-                    // --- [CHANGE] --- Create a Version object from our hardcoded string for comparison.
                     Version currentVersion = new Version(_currentVersionString);
 
                     Log($"Current version: {currentVersion}. Latest version on GitHub: {latestVersion}");
