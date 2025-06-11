@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Reflection;
+using System.Reflection; // This can be removed if not used elsewhere, but it's safe to keep.
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -13,7 +13,10 @@ namespace Preload
     public partial class main : Form
     {
         private const string _githubRepo = "Allesanddro/Preload";
-        private readonly Version _currentVersion;
+
+        // --- [CHANGE] --- Using a hardcoded string for the version number.
+        // Manually update this string when you create a new release.
+        private const string _currentVersionString = "1.0.1";
 
         private CancellationTokenSource _preloadCts;
         private CancellationTokenSource _calculationCts;
@@ -25,10 +28,9 @@ namespace Preload
         {
             InitializeComponent();
 
-            _currentVersion = Assembly.GetExecutingAssembly().GetName().Version;
-            this.Text = $"PrimoCache Preloader v{_currentVersion.Major}.{_currentVersion.Minor}.{_currentVersion.Build}";
+            // --- [CHANGE] --- Removed assembly reading, now uses the hardcoded string.
+            this.Text = $"PrimoCache Preloader v{_currentVersionString}";
 
-            // Set up form events. The button click events are now handled by the designer.
             this.Load += main_Load;
             this.AllowDrop = true;
             this.DragEnter += main_DragEnter;
@@ -70,12 +72,15 @@ namespace Preload
 
                     Version latestVersion = new Version(latestTag.TrimStart('v'));
 
-                    Log($"Current version: {_currentVersion}. Latest version on GitHub: {latestVersion}");
+                    // --- [CHANGE] --- Create a Version object from our hardcoded string for comparison.
+                    Version currentVersion = new Version(_currentVersionString);
 
-                    if (latestVersion > _currentVersion)
+                    Log($"Current version: {currentVersion}. Latest version on GitHub: {latestVersion}");
+
+                    if (latestVersion > currentVersion)
                     {
                         var result = MessageBox.Show(
-                            $"A new version ({latestTag}) is available!\n\nYou are currently using version {_currentVersion}.\n\nWould you like to go to the download page now?",
+                            $"A new version ({latestTag}) is available!\n\nYou are currently using version {currentVersion}.\n\nWould you like to go to the download page now?",
                             "Update Available",
                             MessageBoxButtons.YesNo,
                             MessageBoxIcon.Information);
