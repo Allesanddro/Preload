@@ -22,6 +22,7 @@ namespace Preload
         private string[] _fileList;
         private long _totalFolderSize;
         private bool _isCalculating;
+        private bool _isPreloading;
 
         public main()
         {
@@ -30,11 +31,54 @@ namespace Preload
             this.Text = $"PrimoCache Preloader v{_currentVersionString}";
 
             this.Load += main_Load;
+            this.Resize += main_Resize;
+            this.FormClosing += main_FormClosing;
             this.AllowDrop = true;
             this.DragEnter += main_DragEnter;
             this.DragDrop += main_DragDrop;
 
             this.chkAutoUpdate.CheckedChanged += chkAutoUpdate_CheckedChanged;
+        }
+
+
+        private void main_Resize(object sender, EventArgs e)
+        {
+            if (this.WindowState == FormWindowState.Minimized)
+            {
+                this.Hide();
+                this.ShowInTaskbar = false;
+                trayIcon.Visible = true;
+                trayIcon.ShowBalloonTip(1000, "Preloader Minimized", "The application is still running in the system tray.", ToolTipIcon.Info);
+            }
+        }
+
+        private void ShowWindow()
+        {
+            this.Show();
+            this.WindowState = FormWindowState.Normal;
+            this.ShowInTaskbar = true;
+            trayIcon.Visible = false;
+        }
+
+        private void trayIcon_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            ShowWindow();
+        }
+
+        private void showToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ShowWindow();
+        }
+
+        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Application.Exit();
+        }
+
+        private void main_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            trayIcon.Visible = false;
+            trayIcon.Dispose();
         }
 
         private void main_Load(object sender, EventArgs e)
@@ -182,7 +226,6 @@ namespace Preload
                 Log("Extraction complete. Preparing to apply update...");
 
                 string currentExeName = Path.GetFileName(Process.GetCurrentProcess().MainModule.FileName);
-
 
                 string newExePath = Directory.GetFiles(extractPath, currentExeName, SearchOption.AllDirectories).FirstOrDefault();
 
@@ -354,11 +397,11 @@ del ""{batchScriptPath}""
             }
 
             Log($"Preload started for {_fileList.Length} files.");
-            Properties.Settings.Default.Save();
 
             _preloadCts = new CancellationTokenSource();
             var token = _preloadCts.Token;
 
+            _isPreloading = true;
             SetUIPreloadingState(true);
 
             try
@@ -417,6 +460,7 @@ del ""{batchScriptPath}""
             }
             finally
             {
+                _isPreloading = false;
                 SetUIPreloadingState(false);
                 _preloadCts.Dispose();
                 _preloadCts = null;
@@ -430,7 +474,7 @@ del ""{batchScriptPath}""
                 Log("Cancel button clicked during calculation.");
                 _calculationCts?.Cancel();
             }
-            else
+            else if (_isPreloading)
             {
                 Log("Cancel button clicked during preload.");
                 _preloadCts?.Cancel();
@@ -444,6 +488,7 @@ del ""{batchScriptPath}""
             txtFolderPath.Enabled = !isCalculating;
             btnCancel.Enabled = isCalculating;
             btnCancel.Visible = isCalculating;
+            trayIcon.Text = "Preloader - Calculating...";
 
             if (isCalculating)
             {
@@ -476,6 +521,7 @@ del ""{batchScriptPath}""
             progressBar1.Value = percentage;
             lblProgress.Text = $"{percentage}%  |  {FormatBytes(currentBytes)} / {FormatBytes(totalBytes)}";
             lblSpeed.Text = $"Speed: {FormatBytes(speedBps)}/s";
+            trayIcon.Text = $"Preloader - {percentage}%";
 
             if (speedBps > 0)
             {
@@ -496,6 +542,7 @@ del ""{batchScriptPath}""
                 lblSpeed.Text = "Speed: 0 MB/s";
                 lblETA.Text = "ETA: --:--:--";
                 lblStatus.Text = "Status: Select a folder to preload.";
+                trayIcon.Text = "Preloader - Idle";
             }
         }
 
@@ -545,5 +592,8 @@ del ""{batchScriptPath}""
             return null;
         }
         #endregion
+
+        private void main_Load_1(object sender, EventArgs e) {}
+        private void trayMenu_Opening(object sender, System.ComponentModel.CancelEventArgs e) {}
     }
 }

@@ -28,6 +28,8 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(main));
             this.txtFolderPath = new System.Windows.Forms.TextBox();
             this.btnBrowse = new System.Windows.Forms.Button();
             this.btnPreload = new System.Windows.Forms.Button();
@@ -41,6 +43,10 @@
             this.txtLog = new System.Windows.Forms.TextBox();
             this.btnUpdateCheck = new System.Windows.Forms.Button();
             this.chkAutoUpdate = new System.Windows.Forms.CheckBox();
+            this.trayIcon = new System.Windows.Forms.NotifyIcon(this.components);
+            this.trayMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.trayMenu.SuspendLayout();
             this.SuspendLayout();
             // 
             // txtFolderPath
@@ -171,6 +177,27 @@
             this.chkAutoUpdate.Text = "Auto-check for updates on startup";
             this.chkAutoUpdate.UseVisualStyleBackColor = true;
             // 
+            // trayIcon
+            // 
+            this.trayIcon.ContextMenuStrip = this.trayMenu;
+            this.trayIcon.Icon = ((System.Drawing.Icon)(resources.GetObject("trayIcon.Icon")));
+            this.trayIcon.Text = "notifyIcon1";
+            this.trayIcon.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.trayIcon_MouseDoubleClick);
+            // 
+            // trayMenu
+            // 
+            this.trayMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.exitToolStripMenuItem});
+            this.trayMenu.Name = "trayMenu";
+            this.trayMenu.Size = new System.Drawing.Size(181, 48);
+            this.trayMenu.Opening += new System.ComponentModel.CancelEventHandler(this.trayMenu_Opening);
+            // 
+            // exitToolStripMenuItem
+            // 
+            this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.exitToolStripMenuItem.Text = "Exit";
+            // 
             // main
             // 
             this.AllowDrop = true;
@@ -191,9 +218,12 @@
             this.Controls.Add(this.btnPreload);
             this.Controls.Add(this.btnBrowse);
             this.Controls.Add(this.txtFolderPath);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "main";
             this.RightToLeftLayout = true;
             this.Text = "PrimoCache Preloader";
+            this.Load += new System.EventHandler(this.main_Load_1);
+            this.trayMenu.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -214,6 +244,9 @@
         private System.Windows.Forms.TextBox txtLog;
         private System.Windows.Forms.Button btnUpdateCheck;
         private System.Windows.Forms.CheckBox chkAutoUpdate;
+        private System.Windows.Forms.NotifyIcon trayIcon;
+        private System.Windows.Forms.ContextMenuStrip trayMenu;
+        private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
     }
 }
 
