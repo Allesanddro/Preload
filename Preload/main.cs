@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -12,8 +13,9 @@ namespace Preload
     public partial class main : Form
     {
         private const string _githubRepo = "Allesanddro/Preload";
+        private const string _currentVersionString = "1.0.6";
 
-        private const string _currentVersionString = "1.0.5";
+        private ProgressBar downloadProgressBar;
 
         private CancellationTokenSource _preloadCts;
         private CancellationTokenSource _calculationCts;
@@ -72,16 +74,11 @@ namespace Preload
             {
                 using (var client = new HttpClient())
                 {
-                    client.DefaultRequestHeaders.Add("User-Agent", "PrimoCache-Preloader-Update-Check");
+                    client.DefaultRequestHeaders.Add("User-Agent", "Preloader-Update-Check");
                     string json = await client.GetStringAsync(url);
 
-                    string tagNameMarker = "\"tag_name\":\"";
-                    int startIndex = json.IndexOf(tagNameMarker) + tagNameMarker.Length;
-                    int endIndex = json.IndexOf("\"", startIndex);
-                    string latestTag = json.Substring(startIndex, endIndex - startIndex);
-
+                    string latestTag = GetJsonValue(json, "tag_name");
                     Version latestVersion = new Version(latestTag.TrimStart('v'));
-
                     Version currentVersion = new Version(_currentVersionString);
 
                     if (!isAutoCheck)
@@ -92,19 +89,20 @@ namespace Preload
                     if (latestVersion > currentVersion)
                     {
                         var result = MessageBox.Show(
-                            $"A new version ({latestTag}) is available!\n\nYou are currently using version {currentVersion}.\n\nWould you like to go to the download page now?",
+                            $"A new version ({latestTag}) is available!\n\nYou are currently on v{currentVersion}.\n\nWould you like to download and install the update now?",
                             "Update Available",
                             MessageBoxButtons.YesNoCancel,
                             MessageBoxIcon.Information);
 
                         if (result == DialogResult.Yes)
                         {
-                            Log("User clicked Yes to download update.");
-                            Process.Start(new ProcessStartInfo
+                            string assetUrl = GetDownloadUrl(json);
+                            if (string.IsNullOrEmpty(assetUrl))
                             {
-                                FileName = $"https://github.com/{_githubRepo}/releases/latest",
-                                UseShellExecute = true
-                            });
+                                throw new Exception("Could not find a .zip asset in the latest release.");
+                            }
+
+                            await DownloadAndApplyUpdate(assetUrl);
                         }
                     }
                     else
@@ -137,6 +135,118 @@ namespace Preload
                 }
             }
         }
+
+
+
+        private async Task DownloadAndApplyUpdate(string downloadUrl)
+        {
+            Log("Starting update download...");
+            SetDownloadingState(true);
+
+            string downloadPath = Path.Combine(Path.GetTempPath(), "Preloader-Update.zip");
+            string extractPath = Path.Combine(Path.GetTempPath(), "Preloader-Update");
+
+            try
+            {
+                using (var client = new HttpClient())
+                {
+                    var response = await client.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead);
+                    response.EnsureSuccessStatusCode();
+
+                    var totalBytes = response.Content.Headers.ContentLength ?? -1L;
+                    var totalBytesRead = 0L;
+
+                    using (var contentStream = await response.Content.ReadAsStreamAsync())
+                    using (var fileStream = new FileStream(downloadPath, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true))
+                    {
+                        var buffer = new byte[8192];
+                        int bytesRead;
+                        while ((bytesRead = await contentStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+                        {
+                            await fileStream.WriteAsync(buffer, 0, bytesRead);
+                            totalBytesRead += bytesRead;
+                            if (totalBytes != -1)
+                            {
+                                downloadProgressBar.Value = (int)(100 * totalBytesRead / totalBytes);
+                            }
+                        }
+                    }
+                }
+
+                Log("Download complete. Extracting update...");
+
+                if (Directory.Exists(extractPath))
+                {
+                    Directory.Delete(extractPath, true);
+                }
+                ZipFile.ExtractToDirectory(downloadPath, extractPath);
+
+                Log("Extraction complete. Preparing to apply update...");
+
+                string currentExePath = Process.GetCurrentProcess().MainModule.FileName;
+                string newExePath = Path.Combine(extractPath, Path.GetFileName(currentExePath));
+
+                if (!File.Exists(newExePath))
+                {
+                    throw new FileNotFoundException("New executable not found in the downloaded zip file.", newExePath);
+                }
+
+                string batchScriptPath = Path.Combine(Path.GetTempPath(), "updater.bat");
+                string scriptContent = $@"
+@echo off
+echo Waiting for Preloader to close...
+timeout /t 2 /nobreak > nul
+echo Replacing files...
+move /Y ""{newExePath}"" ""{currentExePath}""
+echo Cleaning up...
+rmdir /s /q ""{extractPath}""
+del ""{downloadPath}""
+echo Update complete. Relaunching...
+start """" ""{currentExePath}""
+del ""{batchScriptPath}""
+";
+                File.WriteAllText(batchScriptPath, scriptContent);
+
+                Process.Start(new ProcessStartInfo(batchScriptPath) { CreateNoWindow = true });
+                Application.Exit();
+            }
+            catch (Exception ex)
+            {
+                Log($"FATAL: Update failed. {ex.Message}");
+                MessageBox.Show($"Update failed: {ex.Message}\n\nPlease try updating manually from GitHub.", "Update Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                SetDownloadingState(false); 
+            }
+        }
+
+        private void SetDownloadingState(bool isDownloading)
+        {
+
+            this.Controls.Cast<Control>().Except(new Control[] { txtLog }).ToList().ForEach(c => c.Enabled = !isDownloading);
+
+            if (isDownloading)
+            {
+                if (downloadProgressBar == null)
+                {
+                    downloadProgressBar = new ProgressBar
+                    {
+                        Name = "downloadProgressBar",
+                        Dock = DockStyle.Bottom,
+                        Height = 20
+                    };
+                    this.Controls.Add(downloadProgressBar);
+                }
+                downloadProgressBar.Visible = true;
+                Log("Downloading update... UI will be disabled.");
+            }
+            else
+            {
+                if (downloadProgressBar != null)
+                {
+                    downloadProgressBar.Visible = false;
+                }
+            }
+        }
+
 
         private void Log(string message)
         {
@@ -245,6 +355,7 @@ namespace Preload
             }
 
             Log($"Preload started for {_fileList.Length} files.");
+            Properties.Settings.Default.Save();
 
             _preloadCts = new CancellationTokenSource();
             var token = _preloadCts.Token;
@@ -404,6 +515,35 @@ namespace Preload
         private void main_DragEnter(object sender, DragEventArgs e)
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop)) { e.Effect = DragDropEffects.Copy; }
+        }
+
+        private string GetJsonValue(string json, string key)
+        {
+            string marker = $"\"{key}\":\"";
+            int startIndex = json.IndexOf(marker) + marker.Length;
+            int endIndex = json.IndexOf("\"", startIndex);
+            if (startIndex < marker.Length || endIndex == -1)
+            {
+                throw new Exception($"Could not find key '{key}' in the GitHub API response.");
+            }
+            return json.Substring(startIndex, endIndex - startIndex);
+        }
+
+        private string GetDownloadUrl(string json)
+        {
+            string assetMarker = "\"browser_download_url\":\"";
+            int currentIndex = 0;
+            while ((currentIndex = json.IndexOf(assetMarker, currentIndex)) != -1)
+            {
+                currentIndex += assetMarker.Length;
+                int endIndex = json.IndexOf("\"", currentIndex);
+                string url = json.Substring(currentIndex, endIndex - currentIndex);
+                if (url.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
+                {
+                    return url;
+                }
+            }
+            return null; 
         }
         #endregion
     }
