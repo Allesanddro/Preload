@@ -13,7 +13,7 @@ namespace Preload
     public partial class main : Form
     {
         private const string _githubRepo = "Allesanddro/Preload";
-        private const string _currentVersionString = "1.0.6";
+        private const string _currentVersionString = "1.0.5";
 
         private ProgressBar downloadProgressBar;
 
@@ -136,8 +136,6 @@ namespace Preload
             }
         }
 
-
-
         private async Task DownloadAndApplyUpdate(string downloadUrl)
         {
             Log("Starting update download...");
@@ -183,14 +181,17 @@ namespace Preload
 
                 Log("Extraction complete. Preparing to apply update...");
 
-                string currentExePath = Process.GetCurrentProcess().MainModule.FileName;
-                string newExePath = Path.Combine(extractPath, Path.GetFileName(currentExePath));
+                string currentExeName = Path.GetFileName(Process.GetCurrentProcess().MainModule.FileName);
 
-                if (!File.Exists(newExePath))
+
+                string newExePath = Directory.GetFiles(extractPath, currentExeName, SearchOption.AllDirectories).FirstOrDefault();
+
+                if (string.IsNullOrEmpty(newExePath))
                 {
-                    throw new FileNotFoundException("New executable not found in the downloaded zip file.", newExePath);
+                    throw new FileNotFoundException("New executable not found in the downloaded zip file.", currentExeName);
                 }
 
+                string currentExePath = Process.GetCurrentProcess().MainModule.FileName;
                 string batchScriptPath = Path.Combine(Path.GetTempPath(), "updater.bat");
                 string scriptContent = $@"
 @echo off
@@ -214,13 +215,12 @@ del ""{batchScriptPath}""
             {
                 Log($"FATAL: Update failed. {ex.Message}");
                 MessageBox.Show($"Update failed: {ex.Message}\n\nPlease try updating manually from GitHub.", "Update Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                SetDownloadingState(false); 
+                SetDownloadingState(false);
             }
         }
 
         private void SetDownloadingState(bool isDownloading)
         {
-
             this.Controls.Cast<Control>().Except(new Control[] { txtLog }).ToList().ForEach(c => c.Enabled = !isDownloading);
 
             if (isDownloading)
@@ -246,7 +246,6 @@ del ""{batchScriptPath}""
                 }
             }
         }
-
 
         private void Log(string message)
         {
@@ -543,7 +542,7 @@ del ""{batchScriptPath}""
                     return url;
                 }
             }
-            return null; 
+            return null;
         }
         #endregion
     }
