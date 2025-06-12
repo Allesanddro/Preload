@@ -13,7 +13,7 @@ namespace Preload
     public partial class main : Form
     {
         private const string _githubRepo = "Allesanddro/Preload";
-        private const string _currentVersionString = "1.0.5";
+        private const string _currentVersionString = "1.0.7";
 
         private ProgressBar downloadProgressBar;
 
