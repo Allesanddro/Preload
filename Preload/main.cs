@@ -13,8 +13,7 @@ namespace Preload
     {
         private const string _githubRepo = "Allesanddro/Preload";
 
-
-        private const string _currentVersionString = "1.0.4";
+        private const string _currentVersionString = "1.0.5";
 
         private CancellationTokenSource _preloadCts;
         private CancellationTokenSource _calculationCts;
@@ -32,26 +31,40 @@ namespace Preload
             this.AllowDrop = true;
             this.DragEnter += main_DragEnter;
             this.DragDrop += main_DragDrop;
+
+            this.chkAutoUpdate.CheckedChanged += chkAutoUpdate_CheckedChanged;
         }
 
         private void main_Load(object sender, EventArgs e)
         {
             Log("Application started.");
             UpdateStatusLabels(true);
-            string lastPath = Properties.Settings.Default.LastFolderPath;
-            if (!string.IsNullOrEmpty(lastPath) && Directory.Exists(lastPath))
+
+            chkAutoUpdate.Checked = Properties.Settings.Default.AutoUpdateCheck;
+            if (chkAutoUpdate.Checked)
             {
-                txtFolderPath.Text = lastPath;
-                Log($"Loaded last used folder: {lastPath}");
-                CalculateFolderSizeAsync(lastPath);
+                Log("Auto-update enabled. Checking for new version on startup...");
+                btnUpdateCheck_Click(this, EventArgs.Empty);
             }
+        }
+
+        private void chkAutoUpdate_CheckedChanged(object sender, EventArgs e)
+        {
+            Properties.Settings.Default.AutoUpdateCheck = chkAutoUpdate.Checked;
+            Properties.Settings.Default.Save();
+            Log($"Auto-update check set to: {chkAutoUpdate.Checked}");
         }
 
         private async void btnUpdateCheck_Click(object sender, EventArgs e)
         {
-            Log("Checking for updates...");
-            btnUpdateCheck.Enabled = false;
-            btnUpdateCheck.Text = "Checking...";
+            bool isAutoCheck = (sender == this);
+
+            if (!isAutoCheck)
+            {
+                Log("Checking for updates...");
+                btnUpdateCheck.Enabled = false;
+                btnUpdateCheck.Text = "Checking...";
+            }
 
             string url = $"https://api.github.com/repos/{_githubRepo}/releases/latest";
 
@@ -71,38 +84,57 @@ namespace Preload
 
                     Version currentVersion = new Version(_currentVersionString);
 
-                    Log($"Current version: {currentVersion}. Latest version on GitHub: {latestVersion}");
+                    if (!isAutoCheck)
+                    {
+                        Log($"Current version: {currentVersion}. Latest version on GitHub: {latestVersion}");
+                    }
 
                     if (latestVersion > currentVersion)
                     {
                         var result = MessageBox.Show(
                             $"A new version ({latestTag}) is available!\n\nYou are currently using version {currentVersion}.\n\nWould you like to go to the download page now?",
                             "Update Available",
-                            MessageBoxButtons.YesNo,
+                            MessageBoxButtons.YesNoCancel,
                             MessageBoxIcon.Information);
 
                         if (result == DialogResult.Yes)
                         {
                             Log("User clicked Yes to download update.");
-                            Process.Start($"https://github.com/{_githubRepo}/releases/latest");
-                        
+                            Process.Start(new ProcessStartInfo
+                            {
+                                FileName = $"https://github.com/{_githubRepo}/releases/latest",
+                                UseShellExecute = true
+                            });
                         }
                     }
                     else
                     {
-                        MessageBox.Show("You are running the latest version.", "Up to Date", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        if (!isAutoCheck)
+                        {
+                            MessageBox.Show("You are running the latest version.", "Up to Date", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }
+                        else
+                        {
+                            Log("Application is up to date.");
+                        }
                     }
                 }
             }
             catch (Exception ex)
             {
                 Log($"ERROR: Could not check for updates. {ex.Message}");
-                MessageBox.Show($"Could not check for updates.\nPlease check your internet connection or visit the GitHub page manually.\n\nError: {ex.Message}", "Update Check Failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                if (!isAutoCheck)
+                {
+                    MessageBox.Show($"Could not check for updates.\nPlease check your internet connection or visit the GitHub page manually.\n\nError: {ex.Message}", "Update Check Failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
             finally
             {
-                btnUpdateCheck.Enabled = true;
-                btnUpdateCheck.Text = "Check for Updates...";
+                if (!isAutoCheck)
+                {
+                    btnUpdateCheck.Enabled = true;
+                    btnUpdateCheck.Text = "Check for Updates...";
+                }
             }
         }
 
@@ -213,8 +245,6 @@ namespace Preload
             }
 
             Log($"Preload started for {_fileList.Length} files.");
-            Properties.Settings.Default.LastFolderPath = txtFolderPath.Text;
-            Properties.Settings.Default.Save();
 
             _preloadCts = new CancellationTokenSource();
             var token = _preloadCts.Token;

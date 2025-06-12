@@ -25,13 +25,13 @@ namespace Preload.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string LastFolderPath {
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool AutoUpdateCheck {
             get {
-                return ((string)(this["LastFolderPath"]));
+                return ((bool)(this["AutoUpdateCheck"]));
             }
             set {
-                this["LastFolderPath"] = value;
+                this["AutoUpdateCheck"] = value;
             }
         }
     }

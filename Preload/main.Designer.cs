@@ -40,6 +40,7 @@
             this.btnCancel = new System.Windows.Forms.Button();
             this.txtLog = new System.Windows.Forms.TextBox();
             this.btnUpdateCheck = new System.Windows.Forms.Button();
+            this.chkAutoUpdate = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // txtFolderPath
@@ -61,7 +62,7 @@
             // 
             // btnPreload
             // 
-            this.btnPreload.Location = new System.Drawing.Point(550, 143);
+            this.btnPreload.Location = new System.Drawing.Point(639, 218);
             this.btnPreload.Name = "btnPreload";
             this.btnPreload.Size = new System.Drawing.Size(83, 23);
             this.btnPreload.TabIndex = 2;
@@ -129,7 +130,7 @@
             // btnCancel
             // 
             this.btnCancel.Enabled = false;
-            this.btnCancel.Location = new System.Drawing.Point(656, 143);
+            this.btnCancel.Location = new System.Drawing.Point(728, 218);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(83, 23);
             this.btnCancel.TabIndex = 9;
@@ -160,6 +161,16 @@
             this.btnUpdateCheck.UseVisualStyleBackColor = true;
             this.btnUpdateCheck.Click += new System.EventHandler(this.btnUpdateCheck_Click);
             // 
+            // chkAutoUpdate
+            // 
+            this.chkAutoUpdate.AutoSize = true;
+            this.chkAutoUpdate.Location = new System.Drawing.Point(195, 534);
+            this.chkAutoUpdate.Name = "chkAutoUpdate";
+            this.chkAutoUpdate.Size = new System.Drawing.Size(187, 17);
+            this.chkAutoUpdate.TabIndex = 12;
+            this.chkAutoUpdate.Text = "Auto-check for updates on startup";
+            this.chkAutoUpdate.UseVisualStyleBackColor = true;
+            // 
             // main
             // 
             this.AllowDrop = true;
@@ -167,6 +178,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.HotTrack;
             this.ClientSize = new System.Drawing.Size(880, 619);
+            this.Controls.Add(this.chkAutoUpdate);
             this.Controls.Add(this.btnUpdateCheck);
             this.Controls.Add(this.txtLog);
             this.Controls.Add(this.btnCancel);
@@ -201,6 +213,7 @@
         private System.Windows.Forms.Button btnCancel;
         private System.Windows.Forms.TextBox txtLog;
         private System.Windows.Forms.Button btnUpdateCheck;
+        private System.Windows.Forms.CheckBox chkAutoUpdate;
     }
 }
 
